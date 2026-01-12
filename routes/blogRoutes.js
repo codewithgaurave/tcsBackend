@@ -11,7 +11,8 @@ import {
   getRelatedBlogs,
   incrementBlogViews,
   likeBlog,
-  searchBlogs
+  searchBlogs,
+  uploadBlogImage
 } from '../controllers/blogController.js';
 
 import {
@@ -21,6 +22,8 @@ import {
   deleteComment,
   addReply
 } from '../controllers/commentController.js';
+
+import { blogImageUpload } from '../config/cloudinary.js';
 
 const router = express.Router();
 
@@ -32,6 +35,7 @@ router.get('/search', searchBlogs);
 router.get('/category/:category', getBlogsByCategory);
 router.get('/:slug', getBlogBySlug);
 router.get('/related/:id', getRelatedBlogs);
+router.post('/upload-image', blogImageUpload.single('image'), uploadBlogImage);
 router.post('/', createBlog);
 router.put('/:id', updateBlog);
 router.delete('/:id', deleteBlog);

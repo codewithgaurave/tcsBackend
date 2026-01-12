@@ -228,7 +228,17 @@ export const updateJobStatus = async (req, res) => {
 // @access  Private
 export const deleteJob = async (req, res) => {
   try {
-    const job = await Job.findById(req.params.id);
+    const { id } = req.params;
+    
+    // Validate ObjectId format
+    if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid job ID format'
+      });
+    }
+
+    const job = await Job.findById(id);
 
     if (!job) {
       return res.status(404).json({
@@ -243,17 +253,30 @@ export const deleteJob = async (req, res) => {
     if (applicationsCount > 0) {
       return res.status(400).json({
         success: false,
-        message: 'Cannot delete job with existing applications'
+        message: `Cannot delete job with ${applicationsCount} existing applications. Please handle applications first.`
       });
     }
 
-    await Job.findByIdAndDelete(req.params.id);
+    // Delete only the specific job
+    const deletedJob = await Job.findByIdAndDelete(id);
+    
+    if (!deletedJob) {
+      return res.status(404).json({
+        success: false,
+        message: 'Job not found or already deleted'
+      });
+    }
 
     res.status(200).json({
       success: true,
-      message: 'Job deleted successfully'
+      message: `Job '${deletedJob.title}' deleted successfully`,
+      data: {
+        deletedJobId: id,
+        deletedJobTitle: deletedJob.title
+      }
     });
   } catch (error) {
+    console.error('Delete job error:', error);
     res.status(500).json({
       success: false,
       message: 'Error deleting job',

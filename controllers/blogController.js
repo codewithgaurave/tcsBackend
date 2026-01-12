@@ -275,12 +275,49 @@ export const searchBlogs = async (req, res) => {
   }
 };
 
+// @desc    Upload blog image to Cloudinary
+// @route   POST /api/blogs/upload-image
+// @access  Private/Admin
+export const uploadBlogImage = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'No image file provided'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Image uploaded successfully',
+      imageUrl: req.file.path,
+      publicId: req.file.filename
+    });
+  } catch (error) {
+    console.error('Upload image error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error uploading image',
+      error: error.message
+    });
+  }
+};
+
 // @desc    Create new blog
 // @route   POST /api/blogs
 // @access  Private/Admin
 export const createBlog = async (req, res) => {
   try {
     const blogData = req.body;
+
+    // Handle uploaded image from Cloudinary
+    if (req.file) {
+      blogData.featuredImage = {
+        url: req.file.path,
+        alt: blogData.featuredImage?.alt || '',
+        caption: blogData.featuredImage?.caption || ''
+      };
+    }
 
     // Validate required author field
     if (!blogData.author || !blogData.author.name) {
@@ -322,6 +359,7 @@ export const createBlog = async (req, res) => {
       message: 'Error creating blog',
       error: error.message
     });
+    console.log(res)
   }
 };
 

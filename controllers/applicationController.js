@@ -102,23 +102,30 @@ export const getApplicationById = async (req, res) => {
 // @access  Public
 export const createApplication = async (req, res) => {
   try {
-    // Check if job exists and is active
-    const job = await Job.findOne({ 
-      _id: req.body.jobId, 
-      status: 'active' 
-    });
+    let job = null;
+    let jobId = null;
 
-    if (!job) {
-      return res.status(400).json({
-        success: false,
-        message: 'Job not found or not active'
+    // If jobId is provided, use it directly
+    if (req.body.jobId) {
+      job = await Job.findOne({ 
+        _id: req.body.jobId, 
+        status: 'active' 
       });
+      jobId = req.body.jobId;
+    } 
+    // If position is provided, find job by title
+    else if (req.body.position) {
+      job = await Job.findOne({ 
+        title: req.body.position, 
+        status: 'active' 
+      });
+      jobId = job?._id;
     }
 
     // Check for duplicate application
     const existingApplication = await Application.findOne({
       email: req.body.email,
-      jobId: req.body.jobId
+      position: req.body.position
     });
 
     if (existingApplication) {
@@ -141,8 +148,8 @@ export const createApplication = async (req, res) => {
 
     const applicationData = {
       ...req.body,
+      jobId: jobId,
       resume: resumeData,
-      position: job.title,
       // Ensure skills is an array
       skills: Array.isArray(req.body.skills) 
         ? req.body.skills 
@@ -151,15 +158,18 @@ export const createApplication = async (req, res) => {
 
     const application = await Application.create(applicationData);
 
-    // Increment applications count in job
-    await job.incrementApplications();
+    // Increment applications count in job if job exists
+    if (job) {
+      await job.incrementApplications();
+    }
 
     res.status(201).json({
       success: true,
-      message: 'Application submitted successfully',
+      message: 'Application submitted successfully! We will review your application and get back to you soon.',
       data: application
     });
   } catch (error) {
+    console.error('Application creation error:', error);
     res.status(400).json({
       success: false,
       message: 'Error submitting application',

@@ -81,8 +81,11 @@ export const validateApplication = [
     .withMessage('Phone number is required'),
   
   body('jobId')
-    .notEmpty()
-    .withMessage('Job ID is required'),
+    .optional(),
+  
+  body('position')
+    .optional()
+    .trim(),
   
   body('experience')
     .trim()
@@ -90,14 +93,15 @@ export const validateApplication = [
     .withMessage('Experience is required'),
   
   body('expectedSalary')
-    .trim()
-    .notEmpty()
-    .withMessage('Expected salary is required'),
+    .optional(),
   
   body('noticePeriod')
+    .optional(),
+  
+  body('message')
     .trim()
     .notEmpty()
-    .withMessage('Notice period is required'),
+    .withMessage('Message is required'),
 
   (req, res, next) => {
     const errors = validationResult(req);

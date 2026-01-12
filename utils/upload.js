@@ -2,27 +2,32 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 
-// Ensure uploads directory exists
-const uploadsDir = path.join(process.cwd(), 'uploads', 'resumes');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
+// Ensure uploads directories exist
+const resumesDir = path.join(process.cwd(), 'uploads', 'resumes');
+
+if (!fs.existsSync(resumesDir)) {
+  fs.mkdirSync(resumesDir, { recursive: true });
 }
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
+// Blog images are now stored on Cloudinary, no local directory needed
+
+// Configure multer for resume uploads
+const resumeStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, uploadsDir);
+    cb(null, resumesDir);
   },
   filename: (req, file, cb) => {
-    // Generate unique filename
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     const extension = path.extname(file.originalname);
     cb(null, 'resume-' + uniqueSuffix + extension);
   }
 });
 
+// Blog images are now handled by Cloudinary
+// Local storage removed for blog images
+
 // File filter for resumes
-const fileFilter = (req, file, cb) => {
+const resumeFilter = (req, file, cb) => {
   const allowedTypes = ['.pdf', '.doc', '.docx'];
   const fileExtension = path.extname(file.originalname).toLowerCase();
   
@@ -33,10 +38,26 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
+// File filter for blog images
+const imageFilter = (req, file, cb) => {
+  const allowedTypes = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+  const fileExtension = path.extname(file.originalname).toLowerCase();
+  
+  if (allowedTypes.includes(fileExtension)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only image files (JPG, JPEG, PNG, GIF, WEBP) are allowed'), false);
+  }
+};
+
 export const upload = multer({
-  storage: storage,
-  fileFilter: fileFilter,
+  storage: resumeStorage,
+  fileFilter: resumeFilter,
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB limit
   }
 });
+
+// Blog image upload now handled by Cloudinary in config/cloudinary.js
+// This export is kept for backward compatibility but not used
+export const blogImageUpload = null;

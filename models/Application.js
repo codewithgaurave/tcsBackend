@@ -26,8 +26,7 @@ const applicationSchema = new mongoose.Schema({
   },
   jobId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Job',
-    required: [true, 'Job ID is required']
+    ref: 'Job'
   },
   experience: {
     type: String,
@@ -40,12 +39,15 @@ const applicationSchema = new mongoose.Schema({
   },
   expectedSalary: {
     type: String,
-    required: [true, 'Expected salary is required'],
     trim: true
   },
   noticePeriod: {
     type: String,
-    required: [true, 'Notice period is required'],
+    trim: true
+  },
+  message: {
+    type: String,
+    required: [true, 'Message is required'],
     trim: true
   },
   resume: {
