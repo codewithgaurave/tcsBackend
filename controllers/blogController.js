@@ -83,9 +83,18 @@ export const getBlogBySlug = async (req, res) => {
     // Increment views
     await blog.incrementViews();
 
+    // Get comments count
+    const commentsCount = await Comment.countDocuments({ 
+      blog: blog._id, 
+      status: 'approved' 
+    });
+
+    const blogData = blog.toObject();
+    blogData.commentsCount = commentsCount;
+
     res.status(200).json({
       success: true,
-      data: blog
+      data: blogData
     });
   } catch (error) {
     console.error('Get blog by slug error:', error);
@@ -481,7 +490,8 @@ export const likeBlog = async (req, res) => {
       });
     }
 
-    await blog.toggleLike();
+    blog.likes += 1;
+    await blog.save();
 
     res.status(200).json({
       success: true,

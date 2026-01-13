@@ -11,30 +11,35 @@ export const auth = async (req, res, next) => {
     }
 
     if (!token) {
+      console.log('No token provided');
       return errorResponse(res, 'Access denied. No token provided.', 401);
     }
 
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      console.log(decoded);
+      console.log('Token decoded:', decoded);
       
       const user = await User.findById(decoded.id);
 
       if (!user) {
+        console.log('User not found for token');
         return errorResponse(res, 'User not found', 401);
       }
 
       if (!user.isActive) {
+        console.log('User account deactivated');
         return errorResponse(res, 'User account is deactivated', 401);
       }
 
       req.user = user;
       next();
     } catch (jwtError) {
+      console.log('JWT Error:', jwtError.message);
       return errorResponse(res, 'Invalid or expired token', 401);
     }
 
   } catch (error) {
+    console.log('Auth middleware error:', error);
     return errorResponse(res, 'Authentication failed', 500);
   }
 };

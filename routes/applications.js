@@ -12,23 +12,24 @@ import {
 
 import { validateApplication, validateApplicationUpdate } from '../middleware/validation.js';
 import { upload } from '../utils/upload.js';
+import { auth, admin } from '../middleware/auth.js';
 
 const router = express.Router();
 
-router.get('/', getApplications);
-router.get('/stats', getApplicationStats);
-router.get('/:id', getApplicationById);
-router.get('/:id/resume', downloadResume);
+// Protected admin routes
+router.get('/', auth, admin, getApplications);
+router.get('/stats', auth, admin, getApplicationStats);
+router.get('/:id', auth, admin, getApplicationById);
+router.get('/:id/resume', auth, admin, downloadResume);
+router.put('/:id', auth, admin, validateApplicationUpdate, updateApplication);
+router.patch('/:id/status', auth, admin, updateApplicationStatus);
+router.delete('/:id', auth, admin, deleteApplication);
 
-// File upload middleware for resume
+// Public route for job applications
 router.post('/', 
   upload.single('resume'),
   validateApplication,
   createApplication
 );
-
-router.put('/:id', validateApplicationUpdate, updateApplication);
-router.patch('/:id/status', updateApplicationStatus);
-router.delete('/:id', deleteApplication);
 
 export default router;

@@ -296,30 +296,46 @@ export const downloadResume = async (req, res) => {
   try {
     const application = await Application.findById(req.params.id);
 
-    if (!application || !application.resume) {
+    if (!application) {
       return res.status(404).json({
         success: false,
-        message: 'Resume not found'
+        message: 'Application not found'
       });
     }
 
-    const filePath = application.resume.path;
+    if (!application.resume || !application.resume.path) {
+      return res.status(404).json({
+        success: false,
+        message: 'Resume not found for this application'
+      });
+    }
+
+    const filePath = path.resolve(application.resume.path);
+    console.log('Attempting to download file from:', filePath);
     
     // Check if file exists
     try {
       await fs.access(filePath);
-    } catch {
+    } catch (fileError) {
+      console.error('File not found:', filePath);
       return res.status(404).json({
         success: false,
         message: 'Resume file not found on server'
       });
     }
 
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="${application.resume.originalName}"`);
+    // Get file stats
+    const stats = await fs.stat(filePath);
     
-    res.sendFile(path.resolve(filePath));
+    // Set proper headers for file download
+    res.setHeader('Content-Type', 'application/octet-stream');
+    res.setHeader('Content-Disposition', `attachment; filename="${application.resume.originalName || 'resume.pdf'}"`);
+    res.setHeader('Content-Length', stats.size);
+    
+    // Send file
+    res.sendFile(filePath);
   } catch (error) {
+    console.error('Download resume error:', error);
     res.status(500).json({
       success: false,
       message: 'Error downloading resume',

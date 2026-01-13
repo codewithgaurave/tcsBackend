@@ -17,12 +17,23 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
 // Security middleware
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      connectSrc: ["'self'", "http://localhost:*"],
+      imgSrc: ["'self'", "data:", "https:"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      fontSrc: ["'self'", "https:"],
+    },
+  },
+}));
 
 // CORS configuration
 app.use(
   cors({
-    origin: process.env.CLIENT_URL,
+    origin: 'http://localhost:5174',
     credentials: true,
   })
 );
@@ -35,6 +46,7 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 // Static files
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/resumes", express.static(path.join(__dirname, "uploads", "resumes")));
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/contact", contactRoutes);
