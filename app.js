@@ -31,7 +31,12 @@ app.use(helmet({
 }));
 
 // CORS configuration
-app.use(cors());
+app.use(cors({
+  credentials: true,
+  origin: [process.env.CLIENT_URL],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // Logging
 app.use(morgan("combined"));
