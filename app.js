@@ -31,12 +31,7 @@ app.use(helmet({
 }));
 
 // CORS configuration
-app.use(
-  cors({
-    origin: 'http://localhost:5174',
-    credentials: true,
-  })
-);
+app.use(cors());
 
 // Logging
 app.use(morgan("combined"));
