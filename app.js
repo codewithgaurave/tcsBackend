@@ -33,8 +33,8 @@ app.use(helmet({
 // CORS configuration
 app.use(cors({
   credentials: true,
-  origin: [process.env.CLIENT_URL],
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  origin: ['http://localhost:5173', 'http://localhost:5174', 'https://www.triveniinframech.com'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
